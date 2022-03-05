@@ -1,5 +1,5 @@
 <script>
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 export default {
   name: 'MainBoard',
   props: {
@@ -9,6 +9,7 @@ export default {
     const turn = ref('X') // our initial player and piece
     console.log('setup called')
     const squares = ref([])
+    const history = ref([])
     squares.value = Array(9).fill('')
     console.log('squares' + squares.value)
     // check 4 winner evertime board updates
@@ -55,8 +56,28 @@ export default {
     function reset () {
       console.log('reset called: ')
       squares.value = Array(9).fill('')
+      console.log('reset sq value ' + squares.value)
     }
-    return { squares, takeTurn, winner, turn, reset }
+    // watchers
+    watch(winner, (newWinner, oldWinner) => {
+      if (newWinner && !oldWinner) {
+        console.log('watcher be watchin')
+        try {
+          history.value.push(newWinner)
+          localStorage.setItem('history', JSON.stringify(history.value)) // add hiistory to localstorage
+        } catch (error) {
+          console.log('history.value ' + history.value)
+          console.log('Error! Could not set item into localStorage: ' + error)
+        }
+      }
+    })
+    onMounted(() => {
+      console.log('onMounted called:')
+      if (JSON.parse(localStorage.getItem('history'))) {
+        history.value = JSON.parse(localStorage.getItem('history'))
+      }
+    })
+    return { squares, takeTurn, winner, turn, reset, history }
   }
 }
 // Psuedo Code it
@@ -71,7 +92,7 @@ export default {
 // - Play Game - Done
 // - resetBoard
 // - ------
-// - History of wins
+// - History of wins ( watchers )
 // - AI - special feature
 // - Look cool
 
@@ -89,6 +110,10 @@ export default {
   <button @click="reset">
     Reset
   </button>
+  <h2>History</h2>
+  <div id="history" v-for="(game, index) in history" v-bind:key="index">
+    Game {{ index + 1 }} : {{ game }} won
+  </div>
 </template>
 
 <style scoped>
