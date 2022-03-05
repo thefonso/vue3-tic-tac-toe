@@ -1,5 +1,5 @@
 <template>
-  <MainBoard msg="Welcome to Your Vue.js App"/>
+  <MainBoard msg="Tic Tac Toe"/>
 </template>
 
 <script>
